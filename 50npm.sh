@@ -6,28 +6,11 @@ function error_exit
   exit $2
 }
 
-#redirect all output to cfn-init to capture it by log.io
-exec >>/var/log/cfn-init.log  2>&1
-echo "------------------------------ — Logger hiccup NOW! — ---------------------------------------"
-/sbin/stop io-server
-/sbin/stop io-harvester
-
 #avoid long NPM fetch hangups
 npm config set fetch-retry-maxtimeout 15000
-#if log.io is not installed, install it and forever.js
-# do not install forever, as we moved services to /etc/init to decrease RAM footprint
-# type -P forever  && echo "... found, skipping install"  || npm install -g --production forever --user 'root'
-type -P log.io-server  && echo "... found, skipping install"   || npm install -g --production log.io --user 'root'
 
 if [ -f "/etc/init/nodejs.conf" ]; then
 IO_LOG_NODE=`grep IO_LOG_NODE /etc/init/nodejs.conf | cut --delimiter='"' --fields=2` && sed -i.bak -e s/IO_LOG_NODE/$IO_LOG_NODE/ /root/.log.io/harvester.conf
-fi
-
-if [[ ! `pgrep -f log.io-server` ]]; then
-/sbin/start io-server
-sleep 2
-/sbin/start io-harvester
-echo "done"
 fi
 
 #install other global stuff
@@ -51,3 +34,8 @@ OUT=$([ -d "/tmp/deployment/application" ] && cd /tmp/deployment/application && 
 echo $OUT
 
 chmod -R o+r /var/node_modules
+
+rm /tmp/deployment/application/node_modules
+mkdir -p /tmp/deployment/application/node_modules
+cp -R /var/node_modules/* /tmp/deployment/application/node_modules/
+
