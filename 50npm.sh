@@ -9,14 +9,10 @@ function error_exit
 #avoid long NPM fetch hangups
 npm config set fetch-retry-maxtimeout 15000
 
-if [ -f "/etc/init/nodejs.conf" ]; then
-IO_LOG_NODE=`grep IO_LOG_NODE /etc/init/nodejs.conf | cut --delimiter='"' --fields=2` && sed -i.bak -e s/IO_LOG_NODE/$IO_LOG_NODE/ /root/.log.io/harvester.conf
-fi
-
 #install other global stuff
 type -P phantomjs  && echo "... found, skipping install"  || {
-npm install -g --production phantomjs@">=1.9.6 <2.0.0" --user 'root'
-#npm install -g --production casperjs --user 'root'
+  npm install -g --production phantomjs@">=1.9.6 <2.0.0" --user 'root'
+  #npm install -g --production casperjs --user 'root'
 }
 type -P r.js  && echo "... found, skipping install"   || npm install -g --production requirejs@">=2.1.11 <3.0.0" --user 'root'
 type -P jade  && echo "... found, skipping install"   || npm install -g --production jade@">=1.3.1 <2.0.0" --user 'root'
